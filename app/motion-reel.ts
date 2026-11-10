@@ -8,9 +8,9 @@ export function motionVariant(width: number, height: number, portrait = true) {
 }
 
 const frames = new Map<string, HTMLImageElement>();
-export const framePath = (index: number, size = 1920) => `/frames/${size}/${String(index).padStart(3, "0")}.webp`;
+export const framePath = (index: number, size: number | string = 1920) => `/frames/${size}/${String(index).padStart(3, "0")}.webp`;
 
-function loadFrame(index: number, size: number) {
+function loadFrame(index: number, size: string) {
   const src = framePath(index, size);
   let image = frames.get(src);
   if (!image) {
@@ -30,7 +30,7 @@ export function createFrameReel(canvas: HTMLCanvasElement, [first, last]: readon
   let target = first;
   let drawn = 0;
   let active = false;
-  let size = 0;
+  let size = "";
 
   function paint() {
     if (!active) return;
@@ -49,12 +49,10 @@ export function createFrameReel(canvas: HTMLCanvasElement, [first, last]: readon
 
   return {
     warm(variant: string) {
-      const next = variant === "3840" ? 3840 : 1920; // portrait phones use the 1920 set, cropped by object-fit
-      if (next === size) return;
-      size = next;
+      if (variant === size) return;
+      size = variant;
       drawn = 0;
-      canvas.width = size;
-      canvas.height = size * 9 / 16;
+      [canvas.width, canvas.height] = size === "portrait" ? [1350, 2160] : [Number(size), Number(size) * 9 / 16];
       for (let index = first; index <= last; index++) loadFrame(index, size).addEventListener("load", paint, { once: true });
       paint();
     },

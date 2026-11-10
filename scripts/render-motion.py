@@ -148,20 +148,22 @@ def render(name, spec):
     folder.mkdir(parents=True, exist_ok=True)
     first, last = load(name), load(spec[4]) if spec[4] else None
     sprites = falling_sprites(name, first)
+    # Phones get a full-height 1350 × 2160 crop: a 3x phone fills 2500+ physical rows, so anything shorter looks soft.
     portrait_width = 1350
     portrait_x = round(WIDTH * spec[3] - portrait_width / 2)
+    first.crop((portrait_x, 0, portrait_x + portrait_width, HEIGHT)).save(
+        ROOT / "public" / "cinema" / f"{name}-portrait.webp", quality=84, method=6)
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     filters = (
         f"[0:v]format=yuv420p,split=3[uhd][wide][portrait];"
         f"[wide]scale=1920:1080:flags=lanczos[hd];"
-        f"[portrait]crop={portrait_width}:{HEIGHT}:{portrait_x}:0,"
-        "scale=960:1536:flags=lanczos[phone]"
+        f"[portrait]crop={portrait_width}:{HEIGHT}:{portrait_x}:0[phone]"
     )
     command = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-filter_complex_threads", "4",
                "-f", "rawvideo", "-pixel_format", "rgb24", "-video_size", f"{WIDTH}x{HEIGHT}",
                "-framerate", str(FPS), "-i", "-", "-filter_complex", filters]
     outputs = []
-    for stream, variant, quality in (("uhd", "3840", "23"), ("hd", "1920", "24"), ("phone", "portrait", "24")):
+    for stream, variant, quality in (("uhd", "3840", "23"), ("hd", "1920", "24"), ("phone", "portrait", "20")):
         output = folder / f"{name}-{variant}.mp4"
         temp = output.with_suffix(".partial.mp4")
         outputs.append((temp, output))
