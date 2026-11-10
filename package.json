@@ -10,7 +10,6 @@
     "start": "serve out --no-clipboard"
   },
   "dependencies": {
-    "@fontsource-variable/cormorant-garamond": "latest",
     "@fontsource-variable/manrope": "latest",
     "gsap": "3.15.1",
     "lenis": "^1.3.27",
