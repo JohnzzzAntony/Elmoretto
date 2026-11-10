@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+models/
+# local source material, not part of the site
+*.zip
+source-assets/
+reference-frames/
+.claude/
