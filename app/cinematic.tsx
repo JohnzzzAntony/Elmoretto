@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SCRUB, scrollToPosition } from "./motion";
 import { createFrameReel, createMotionReel, framePath, motionVariant } from "./motion-reel";
 import { Navigation } from "./navigation";
 import { products } from "./products";
@@ -12,7 +13,7 @@ import { Visual } from "./visual";
 const quickCuts: readonly string[] = ["drum", "journey", "roast"];
 const dissolve = (index: number) => {
   const { id } = chapters[index];
-  return seamless.includes(id) ? 0.01 : quickCuts.includes(id) ? 0.65 : 1.25;
+  return seamless.includes(id) ? 0.01 : quickCuts.includes(id) ? 0.9 : 1.6;
 };
 const cues = chapters.map((chapter, i) => {
   const previous = chapters[i - 1];
@@ -92,14 +93,14 @@ export function CinematicExperience() {
         onUpdate: sync,
         scrollTrigger: {
           trigger: root.current, pin: viewport, start: "top top",
-          end: () => `+=${viewport.clientHeight * 20}`,
-          scrub: 0.65, anticipatePin: 1, invalidateOnRefresh: true,
+          end: () => `+=${viewport.clientHeight * 24}`,
+          scrub: SCRUB, anticipatePin: 1, invalidateOnRefresh: true,
         },
       });
 
       timeline
         .set({}, {}, TOTAL) // keeps the timeline exactly TOTAL long, so jump() can map chapter units to scroll
-        .to(select(".hero"), { autoAlpha: 0, y: -26, duration: 3.1, ease: "power1.inOut" }, 1.3);
+        .to(select(".hero"), { autoAlpha: 0, y: -32, duration: 3.4, ease: "sine.inOut" }, 1.2);
       shots.forEach((shot, i) => {
         const chapter = chapters[i];
         const next = chapters[i + 1];
@@ -109,46 +110,48 @@ export function CinematicExperience() {
           timeline.fromTo(shot, { autoAlpha: 0 }, { autoAlpha: 1, duration, ease: "sine.inOut" }, start);
           timeline.set(shots[i - 1], { autoAlpha: 0 }, start + duration);
         }
-        const caption = shot.querySelector(".caption");
-        timeline.fromTo(caption, { autoAlpha: 0, y: 22 },
-          { autoAlpha: 1, y: 0, duration: 1.15, ease: "power2.out" },
-          i === 0 ? ORIGIN_CAPTION : chapter.at + 0.7);
+        // Each caption fades in as a block while its lines rise one after another, then lifts away before the next chapter.
+        const caption = shot.querySelector(".caption")!;
+        const enter = i === 0 ? ORIGIN_CAPTION : chapter.at + 0.6;
+        timeline
+          .fromTo(caption, { autoAlpha: 0, y: 0 }, { autoAlpha: 1, duration: 1.2, ease: "sine.inOut" }, enter)
+          .fromTo(caption.children, { y: 34 }, { y: 0, duration: 1.3, stagger: 0.16, ease: "power3.out" }, enter);
         if (hasNext) {
-          timeline.to(caption, { autoAlpha: 0, y: -14, duration: 0.85, ease: "power1.in" }, next.at - 0.85);
+          timeline.to(caption, { autoAlpha: 0, y: -20, duration: 1, ease: "sine.in" }, next.at - 1);
         }
       });
 
       const curtain = CURTAIN.end - CURTAIN.start;
       timeline
         .fromTo(film, { clipPath: "inset(0% 0% 0% 0%)" },
-          { clipPath: "inset(0% 0% 100% 0%)", duration: curtain, ease: "power2.inOut" }, CURTAIN.start)
+          { clipPath: "inset(0% 0% 100% 0%)", duration: curtain, ease: "sine.inOut" }, CURTAIN.start)
         .fromTo(ritual, { yPercent: 5 }, { yPercent: 0, duration: curtain, ease: "power2.out" }, CURTAIN.start)
         .set(film, { visibility: "hidden" }, CURTAIN.end)
         // The bags rise in as the curtain lifts, then drift up gently while the collection holds.
         .fromTo(select(".product"), { autoAlpha: 0, yPercent: 16 },
-          { autoAlpha: 1, yPercent: 0, duration: 3.2, stagger: 0.55, ease: "power3.out" }, CURTAIN.start + 2.6)
+          { autoAlpha: 1, yPercent: 0, duration: 3.6, stagger: 0.6, ease: "power3.out" }, CURTAIN.start + 2.6)
         .fromTo(select(".product-bag"), { yPercent: 3 }, { yPercent: -4, duration: 73 - CURTAIN.start, ease: "none" }, CURTAIN.start);
       sync();
 
-      function jump(id: string, behavior: ScrollBehavior) {
+      function jump(id: string, instant = false) {
         const index = chapters.findIndex((chapter) => chapter.id === id);
         const trigger = timeline.scrollTrigger;
         if (index < 0 || !trigger) return false;
         const time = index === 0 ? 0 : chapters[index].at + 2;
-        window.scrollTo({ top: trigger.start + ((trigger.end - trigger.start) * time) / TOTAL, behavior });
+        scrollToPosition(trigger.start + ((trigger.end - trigger.start) * time) / TOTAL, instant);
         return true;
       }
 
       function onClick(event: MouseEvent) {
         if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const link = (event.target as Element).closest<HTMLAnchorElement>("a[href*='#']");
-        if (!link || link.pathname !== location.pathname || !jump(link.hash.slice(1), "smooth")) return;
+        if (!link || link.pathname !== location.pathname || !jump(link.hash.slice(1))) return;
         event.preventDefault();
         history.replaceState(null, "", link.hash);
         link.closest("details")?.removeAttribute("open");
       }
 
-      const onHash = () => { jump(location.hash.slice(1), "instant"); };
+      const onHash = () => { jump(location.hash.slice(1), true); };
       const onResize = () => {
         variant = motionVariant(viewport.clientWidth, viewport.clientHeight);
         sync();

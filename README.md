@@ -24,7 +24,9 @@ Open [127.0.0.1:3074](http://127.0.0.1:3074/) for the production preview. Publis
 
 ## Scroll timeline
 
-The stage is pinned for 18 viewport heights. The GSAP timeline in `app/cinematic.tsx` uses chapter cues from `app/sequence.ts`. Scroll position selects a rendered frame and controls the cuts, curtain, captions, and chapter dock in both directions. Story and Coffee use the same reels on their main photographs as they pass through the viewport.
+The stage is pinned for 24 viewport heights. The GSAP timeline in `app/cinematic.tsx` uses chapter cues from `app/sequence.ts`. Scroll position selects a rendered frame and controls the cuts, curtain, captions, and chapter dock in both directions. Story and Coffee use the same reels on their main photographs as they pass through the viewport.
+
+`app/motion.tsx` holds the motion shared by every page: Lenis smooth scrolling driven by the GSAP ticker, the `SCRUB` lag used by the film and the plates, the rise-in reveals, and the photograph drift. Change the pace of the whole site there.
 
 | Scroll units | Visuals |
 | --- | --- |

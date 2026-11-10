@@ -18,6 +18,7 @@
   --soft: rgb(243 235 220 / 68%);
   --rule: rgb(243 235 220 / 20%);
   --accent: var(--gold);
+  --glide: cubic-bezier(.2, .7, .2, 1);
 }
 
 html { background: var(--espresso); }
@@ -34,8 +35,8 @@ h1 em, h2 em { color: var(--accent); font-weight: 400; }
 
 /* Pages cross-fade into each other on navigation. */
 @view-transition { navigation: auto; }
-::view-transition-old(root) { animation: 260ms ease both page-out; }
-::view-transition-new(root) { animation: 420ms ease 120ms both page-in; }
+::view-transition-old(root) { animation: 380ms var(--glide) both page-out; }
+::view-transition-new(root) { animation: 900ms var(--glide) 160ms both page-in; }
 @keyframes page-out { to { opacity: 0; } }
 @keyframes page-in { from { opacity: 0; transform: translateY(1rem); } }
 
@@ -228,20 +229,13 @@ h1 em, h2 em { color: var(--accent); font-weight: 400; }
 .range-buy .button { margin-top: 0; }
 @media (min-width: 768px) { .range-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
-/* Scroll-linked reveals for the ordinary pages. */
-@keyframes rise { from { opacity: 0; transform: translateY(3rem); } }
-@keyframes frame-arrival { from { transform: scale(1.13) translateY(-1.8%); } }
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .outro h2, .outro-card, .story-card, .collection > *, .range-card {
-      animation: rise linear both; animation-timeline: view(); animation-range: entry 0% cover 28%;
-    }
-    .outro-card img, .editorial picture img {
-      animation: frame-arrival linear both; animation-timeline: view(); animation-range: entry 0% cover 54%;
-    }
-    .editorial .motion-plate img { animation: none; }
-  }
-}
+/* Opening lines rise in on load. Everything further down is revealed on scroll by app/motion.tsx. */
+@keyframes rise { from { opacity: 0; transform: translateY(2.4rem); } }
+.hero > *, .editorial-intro > div > *, .editorial-plate { animation: rise 1.5s var(--glide) both; }
+:is(.hero, .editorial-intro > div) > :nth-child(2) { animation-delay: 140ms; }
+:is(.hero, .editorial-intro > div) > :nth-child(3) { animation-delay: 280ms; }
+:is(.hero, .editorial-intro > div) > :nth-child(4), .editorial-plate { animation-delay: 420ms; }
+.outro-card img, .editorial picture img { will-change: transform; }
 
 @media (max-width: 767px) {
   :root { --header: 4.3rem; }
