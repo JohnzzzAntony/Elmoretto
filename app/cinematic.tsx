@@ -10,9 +10,9 @@ import { ORIGIN_CAPTION, TOTAL, chapters, frameRanges, seamless } from "./sequen
 import { Visual } from "./visual";
 
 // The film is pinned for PIN screens, then holds for one more while the next section rises over it.
-const PIN = 14;
+const PIN = 11;
 const HANDOFF = TOTAL / PIN;
-const quickCuts: readonly string[] = ["drum", "journey", "roast"];
+const quickCuts: readonly string[] = ["drum", "journey"];
 const dissolve = (index: number) => {
   const { id } = chapters[index];
   return seamless.includes(id) ? 0.01 : quickCuts.includes(id) ? 0.9 : 1.6;
@@ -69,7 +69,7 @@ export function CinematicExperience() {
       });
 
       timeline
-        // The roast dims and settles back as it is covered.
+        // The film dims and settles back as it is covered.
         .to(select(".film"), { opacity: 0.3, scale: 0.94, duration: HANDOFF, ease: "sine.in" }, TOTAL)
         .to(select(".hero"), { autoAlpha: 0, y: -32, duration: 3.4, ease: "sine.inOut" }, 1.2);
       shots.forEach((shot, i) => {
@@ -138,7 +138,7 @@ export function CinematicExperience() {
     <div className="experience" ref={root}>
       <div className="stage" ref={stage}>
         <Navigation />
-        <section className="film" aria-label="From harvest to roast">
+        <section className="film" aria-label="From harvest to the roastery">
           {chapters.map((chapter, i) => (
             <article className="shot" key={chapter.id} id={chapter.id}>
               <div className="shot-image">

@@ -1,5 +1,5 @@
 // Scroll units of the harvest film. The reel takes over on the home page once it ends.
-export const TOTAL = 58;
+export const TOTAL = 47;
 export const ORIGIN_CAPTION = 5;
 
 // Scroll-scrubbed frames in public/frames. 182 and 253 are cuts in the first clip; 301–420 is the truck clip.
@@ -34,11 +34,6 @@ export const chapters = [
     id: "journey", label: "The journey", at: 36, visual: "drum",
     kicker: "Down the valley", title: ["From the farm", "to the roastery."],
     copy: "Loaded by hand and driven down the mountain road to our roastery, where the drum is already warm.",
-  },
-  {
-    id: "roast", label: "The roast", at: 46, visual: "roast",
-    kicker: "Fire and timing", title: ["Roasted to", "the edge."],
-    copy: "Heat wakes the sugars. We stop the roast seconds before boldness turns to bitterness.",
   },
 ] as const;
 
