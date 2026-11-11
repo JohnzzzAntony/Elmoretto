@@ -24,7 +24,7 @@ Open [127.0.0.1:3074](http://127.0.0.1:3074/) for the production preview. Publis
 
 ## Scroll timeline
 
-The home page is two pinned films, one after the other. The harvest film is pinned for 14 viewport heights. Its GSAP timeline in `app/cinematic.tsx` uses chapter cues from `app/sequence.ts`: scroll position selects a rendered frame and controls the cuts and captions in both directions. When the roast ends it scrolls away and the reel (below) takes over. Story and Coffee use the same reels on their main photographs as they pass through the viewport.
+The home page is two pinned films, one after the other. The harvest film is pinned for 14 viewport heights. Its GSAP timeline in `app/cinematic.tsx` uses chapter cues from `app/sequence.ts`: scroll position selects a rendered frame and controls the cuts and captions in both directions. When the roast ends it holds for one more screen, dimming and settling back, while the reel (below) rises over it and takes over. Story and Coffee use the same reels on their main photographs as they pass through the viewport.
 
 `app/motion.tsx` holds the motion shared by every page: Lenis smooth scrolling driven by the GSAP ticker, the `SCRUB` lag used by the films and the plates, the rise-in reveals, and the photograph drift. Change the pace of the whole site there.
 

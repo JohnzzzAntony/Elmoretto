@@ -203,7 +203,7 @@ export function Reel({ embedded = false }: { embedded?: boolean }) {
 
       function render(time: number) {
         const trigger = timeline.scrollTrigger;
-        if (!trigger?.isActive) return;
+        if (!trigger || !ScrollTrigger.isInViewport(viewport)) return; // also draws while it rises over the home film
         const first = Math.min(Math.floor(playhead.frame), COUNT - 1);
         const a = nearest(first);
         if (a < 0) return; // nothing has arrived yet; the canvas shows its poster

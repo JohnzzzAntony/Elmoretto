@@ -12,6 +12,7 @@
   --sans: "Manrope Variable", Arial, sans-serif;
   --gutter: clamp(1.25rem, 5vw, 5.5rem);
   --header: 5.25rem;
+  --stage: max(100svh, 34rem);
   /* Text colours on the dark surface every page uses. */
   --text: var(--cream);
   --soft: rgb(243 235 220 / 68%);
@@ -78,7 +79,10 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
 /* ---------- The scroll film ---------- */
 
 .stage { position: relative; isolation: isolate; overflow: hidden; background: var(--espresso); }
-.stage[data-enhanced] { height: 100svh; min-height: 34rem; }
+.stage[data-enhanced] { height: var(--stage); }
+/* On the home page the second film starts one screen early and rises over the first, which is still pinned. */
+.experience:has(.stage[data-enhanced]) + .experience { position: relative; z-index: 1; margin-top: calc(-1 * var(--stage)); }
+.experience + .experience .stage[data-enhanced] { box-shadow: 0 -1.5rem 5rem rgb(0 0 0 / 55%); }
 .film { color: var(--text); }
 .film { background: #15180f; }
 .stage[data-enhanced] .film { position: absolute; inset: 0; }
@@ -230,8 +234,7 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
 }
 
 @media (orientation: landscape) and (max-height: 600px) {
-  :root { --header: 3.9rem; }
-  .stage[data-enhanced] { min-height: 0; }
+  :root { --header: 3.9rem; --stage: 100svh; }
   .hero, .stage[data-enhanced] .caption { bottom: 1.2rem; }
   .hero h1, .caption h2 { font-size: clamp(2.1rem, 8.5vh, 3.1rem); }
   .hero-hint { display: none; }

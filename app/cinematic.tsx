@@ -9,6 +9,9 @@ import { Navigation } from "./navigation";
 import { ORIGIN_CAPTION, TOTAL, chapters, frameRanges, seamless } from "./sequence";
 import { Visual } from "./visual";
 
+// The film is pinned for PIN screens, then holds for one more while the next section rises over it.
+const PIN = 14;
+const HANDOFF = TOTAL / PIN;
 const quickCuts: readonly string[] = ["drum", "journey", "roast"];
 const dissolve = (index: number) => {
   const { id } = chapters[index];
@@ -60,13 +63,14 @@ export function CinematicExperience() {
         onUpdate: sync,
         scrollTrigger: {
           trigger: root.current, pin: viewport, start: "top top",
-          end: () => `+=${viewport.clientHeight * 14}`,
+          end: () => `+=${viewport.clientHeight * (PIN + 1)}`,
           scrub: SCRUB, anticipatePin: 1, invalidateOnRefresh: true,
         },
       });
 
       timeline
-        .set({}, {}, TOTAL) // keeps the timeline exactly TOTAL long, so jump() can map chapter units to scroll
+        // The roast dims and settles back as it is covered.
+        .to(select(".film"), { opacity: 0.3, scale: 0.94, duration: HANDOFF, ease: "sine.in" }, TOTAL)
         .to(select(".hero"), { autoAlpha: 0, y: -32, duration: 3.4, ease: "sine.inOut" }, 1.2);
       shots.forEach((shot, i) => {
         const chapter = chapters[i];
@@ -95,7 +99,7 @@ export function CinematicExperience() {
         const trigger = timeline.scrollTrigger;
         if (index < 0 || !trigger) return false;
         const time = index === 0 ? 0 : chapters[index].at + 2;
-        scrollToPosition(trigger.start + ((trigger.end - trigger.start) * time) / TOTAL, instant);
+        scrollToPosition(trigger.start + ((trigger.end - trigger.start) * time) / (TOTAL + HANDOFF), instant);
         return true;
       }
 
