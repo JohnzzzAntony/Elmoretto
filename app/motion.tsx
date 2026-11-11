@@ -21,6 +21,16 @@ export function scrollToPosition(top: number, instant = false) {
   lenis.scrollTo(top, { duration: gsap.utils.clamp(1.4, 3.6, 1 + screens * 0.22), easing: glide });
 }
 
+// Runs once the page has finished loading. Returns a cancel for effects that unmount first.
+export function afterLoad(run: () => void) {
+  if (document.readyState === "complete") {
+    run();
+    return () => {};
+  }
+  window.addEventListener("load", run, { once: true });
+  return () => window.removeEventListener("load", run);
+}
+
 export function Motion() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);

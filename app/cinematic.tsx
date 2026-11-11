@@ -3,16 +3,15 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SCRUB, scrollToPosition } from "./motion";
-import { createFrameReel, createMotionReel, framePath, motionVariant } from "./motion-reel";
+import { SCRUB, afterLoad, scrollToPosition } from "./motion";
+import { createFrameReel, framePath, motionVariant } from "./motion-reel";
 import { Navigation } from "./navigation";
-import { ORIGIN_CAPTION, TOTAL, chapters, frameRanges, seamless } from "./sequence";
-import { Visual } from "./visual";
+import { ORIGIN_CAPTION, TOTAL, chapters, frameRanges, hdOnly, seamless } from "./sequence";
 
 // The film is pinned for PIN screens, then holds for one more while the next section rises over it.
-const PIN = 11;
+const PIN = 17;
 const HANDOFF = TOTAL / PIN;
-const quickCuts: readonly string[] = ["drum", "journey"];
+const quickCuts: readonly string[] = ["drum", "journey", "roast"];
 const dissolve = (index: number) => {
   const { id } = chapters[index];
   return seamless.includes(id) ? 0.01 : quickCuts.includes(id) ? 0.9 : 1.6;
@@ -37,21 +36,22 @@ export function CinematicExperience() {
     media.add("(prefers-reduced-motion: no-preference)", () => {
       viewport.dataset.enhanced = "true";
       let variant = motionVariant(viewport.clientWidth, viewport.clientHeight);
-      const reels = shots.map((shot, i) => {
-        const range = frameRanges[chapters[i].id];
-        if (range) {
-          const reel = createFrameReel(shot.querySelector("canvas")!, range);
-          reel.warm(variant); // request the whole set up front, in chapter order, so frames are ready ahead of the scroll
-          return reel;
-        }
-        return createMotionReel(shot.querySelector("video")!, chapters[i].visual);
+      const reels = shots.map((shot, i) => createFrameReel(shot.querySelector("canvas")!, frameRanges[chapters[i].id]));
+      // Frames wait for the load event, so the browser's loading indicator stops as soon as the page itself is in.
+      let loaded = false;
+      const warm = (i: number) => {
+        if (loaded) reels[i].warm(variant === "3840" && hdOnly.includes(chapters[i].id) ? "1920" : variant);
+      };
+      const cancelWarm = afterLoad(() => {
+        loaded = true;
+        reels.forEach((_, i) => warm(i)); // the whole set, in chapter order, so frames are ready ahead of the scroll
       });
 
       function sync() {
         const time = timeline.time();
         reels.forEach((reel, i) => {
           const { start, end } = cues[i];
-          if (time >= start - 5 && time <= end + 4) reel.warm(variant);
+          if (time >= start - 5 && time <= end + 4) warm(i);
           if (time >= start && time <= end) reel.draw((time - start) / (end - start));
           else reel.hold();
           if (time < start - 14 || time > end + 14) reel.release();
@@ -123,6 +123,7 @@ export function CinematicExperience() {
       const initial = requestAnimationFrame(onHash);
 
       return () => {
+        cancelWarm();
         cancelAnimationFrame(initial);
         viewport.removeEventListener("click", onClick);
         window.removeEventListener("hashchange", onHash);
@@ -138,18 +139,13 @@ export function CinematicExperience() {
     <div className="experience" ref={root}>
       <div className="stage" ref={stage}>
         <Navigation />
-        <section className="film" aria-label="From harvest to the roastery">
+        <section className="film" aria-label="From harvest to the cup">
           {chapters.map((chapter, i) => (
             <article className="shot" key={chapter.id} id={chapter.id}>
               <div className="shot-image">
-                {frameRanges[chapter.id] ? <>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- static export, the first frame doubles as the poster */}
-                  <img src={framePath(frameRanges[chapter.id]![0])} alt="" width="1920" height="1080" fetchPriority={i === 0 ? "high" : "auto"} loading={i === 0 ? "eager" : "lazy"} />
-                  <canvas className="motion-reel" width="1920" height="1080" aria-hidden="true" />
-                </> : <>
-                  <Visual name={chapter.visual} priority={i === 0} cinematic />
-                  <video className="motion-reel" preload="none" muted playsInline aria-hidden="true" />
-                </>}
+                {/* eslint-disable-next-line @next/next/no-img-element -- static export, the first frame doubles as the poster */}
+                <img src={framePath(frameRanges[chapter.id][0])} alt="" width="1920" height="1080" fetchPriority={i === 0 ? "high" : "auto"} loading={i === 0 ? "eager" : "lazy"} />
+                <canvas className="motion-reel" width="1920" height="1080" aria-hidden="true" />
               </div>
               <div className="shot-shade" />
               {i === 0 && <div className="hero">

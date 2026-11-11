@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { LinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, WebGLRenderer } from "three";
-import { SCRUB, scrollToPosition } from "../motion";
+import { SCRUB, afterLoad, scrollToPosition } from "../motion";
 import { Navigation } from "../navigation";
 
 // public/reel/ holds the brand film as stills, written by scripts/extract-reel-frames.mjs. Keep these two in step with it.
@@ -161,7 +161,7 @@ export function Reel({ embedded = false }: { embedded?: boolean }) {
           return image;
         });
       }, { rootMargin: "200% 0px" });
-      loader.observe(root.current!);
+      const cancelLoader = afterLoad(() => loader.observe(root.current!)); // keeps the stills out of the page load
       function nearest(index: number) {
         for (let distance = 0; distance < COUNT; distance++) {
           if (frames[index - distance]) return index - distance;
@@ -237,6 +237,7 @@ export function Reel({ embedded = false }: { embedded?: boolean }) {
       return () => {
         cancelAnimationFrame(initial);
         window.removeEventListener("hashchange", onHash);
+        cancelLoader();
         loader.disconnect();
         gsap.ticker.remove(render);
         viewport.removeEventListener("pointermove", onPointerMove);

@@ -8,7 +8,7 @@ import { Visual } from "../visual";
 export const metadata: Metadata = { title: "Our Story" };
 
 // Story chapters that have a matching chapter in the scroll film on the home page.
-const filmLinks = { origin: "origin", cherry: "cherry", process: "harvest", processing: "drum", roast: "fire", brew: "espresso", reveal: "sip" };
+const filmLinks = { origin: "origin", cherry: "cherry", process: "harvest", processing: "drum", roast: "roast", brew: "espresso", reveal: "sip" };
 
 export default function Story() {
   return <>
