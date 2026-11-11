@@ -10,6 +10,7 @@ function Wordmark() {
 const links = [
   ["/#origin", "The Journey"],
   ["/#products", "The Collection"],
+  ["/reel/", "The Reel"],
   ["/story/", "Our Story"],
   ["/coffee/", "Our Coffee"],
 ] as const;

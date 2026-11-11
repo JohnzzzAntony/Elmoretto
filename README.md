@@ -20,7 +20,7 @@ npm run build
 python -m http.server 3074 --bind 127.0.0.1 --directory out
 ```
 
-Open [127.0.0.1:3074](http://127.0.0.1:3074/) for the production preview. Publish the contents of `out/` at the root of a static host. The exported routes are `/`, `/story/`, and `/coffee/`.
+Open [127.0.0.1:3074](http://127.0.0.1:3074/) for the production preview. Publish the contents of `out/` at the root of a static host. The exported routes are `/`, `/reel/`, `/story/`, and `/coffee/`.
 
 ## Scroll timeline
 
@@ -35,6 +35,12 @@ The stage is pinned for 24 viewport heights. The GSAP timeline in `app/cinematic
 | 63–100 | Bean cracks open, pour-over grounds bloom, carafe pour tapers to drops, and the finished cup comes into focus |
 
 Reduced-motion and no-JavaScript visitors get the photographs and chapter text in reading order.
+
+## The reel
+
+`/reel/` is a second scroll template, built from the El Moretto brand film. `app/reel/reel.tsx` pins the stage for 12 viewport heights and scrubs the film with the shared Lenis scroll and `SCRUB` lag. A three.js shader draws it: it cross-fades neighbouring stills so slow scrolling glides, and adds a slight push-in and colour split at speed, pointer drift, grain and a vignette. Seven captions are timed to the film's cuts.
+
+The film is 494 stills at 15 fps in `public/reel/`, in 1600 × 900 and 960 × 540, loaded coarse to fine. `node scripts/extract-reel-frames.mjs` rebuilds them in the browser from `source-assets/recording.mp4`, a screen capture of the film: it trims the player controls, crops the edge line and paints over the mouse pointer. If the frame count changes, update `COUNT` and the chapter times in `reel.tsx`.
 
 ## Brand and products
 
