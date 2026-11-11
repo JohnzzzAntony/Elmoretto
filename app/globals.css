@@ -12,7 +12,7 @@
   --sans: "Manrope Variable", Arial, sans-serif;
   --gutter: clamp(1.25rem, 5vw, 5.5rem);
   --header: 5.25rem;
-  /* Text colours on the current surface; light surfaces override them below. */
+  /* Text colours on the dark surface every page uses. */
   --text: var(--cream);
   --soft: rgb(243 235 220 / 68%);
   --rule: rgb(243 235 220 / 20%);
@@ -79,15 +79,10 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
 
 .stage { position: relative; isolation: isolate; overflow: hidden; background: var(--espresso); }
 .stage[data-enhanced] { height: 100svh; min-height: 34rem; }
-.stage[data-theme="light"] .site-header, .ritual {
-  --text: #2c1e15; --soft: #513e31; --rule: rgb(36 25 18 / 24%); --accent: #8b4425;
-}
-.film, .ritual { color: var(--text); }
+.film { color: var(--text); }
 .film { background: #15180f; }
-.ritual { background: #eae0d1; }
-.stage[data-enhanced] :is(.film, .ritual) { position: absolute; inset: 0; }
-.stage[data-enhanced] .film { z-index: 2; will-change: clip-path; }
-.stage[data-enhanced] .ritual { z-index: 1; }
+.stage[data-enhanced] .film { position: absolute; inset: 0; }
+.stage[data-enhanced] .film { z-index: 2; }
 
 .shot { position: relative; isolation: isolate; }
 .shot-image { overflow: hidden; }
@@ -109,12 +104,6 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
     linear-gradient(180deg, rgb(15 11 7 / 58%), transparent 22%),
     linear-gradient(90deg, rgb(15 11 7 / 66%), rgb(15 11 7 / 27%) 39%, transparent 68%);
 }
-.ritual .shot-shade {
-  background:
-    linear-gradient(0deg, rgb(239 229 213 / 95%), transparent 18%),
-    linear-gradient(180deg, rgb(239 229 213 / 68%), transparent 18%),
-    linear-gradient(90deg, rgb(239 229 213 / 88%), rgb(239 229 213 / 45%) 28%, transparent 56%);
-}
 #origin { min-height: 100svh; }
 .stage[data-enhanced] #origin { min-height: 0; }
 .hero, .stage[data-enhanced] .caption {
@@ -134,8 +123,6 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
 .chapter-copy { max-width: 28rem; margin-top: 1.2rem; color: var(--soft); line-height: 1.65; }
 .stage[data-enhanced] .caption { padding: 0; visibility: hidden; }
 .film .chapter-copy { color: #f3ebdc; }
-.ritual .button { color: var(--cream); background: var(--ink); }
-.ritual .button:hover { background: var(--copper); }
 .stage:not([data-enhanced]) #origin .caption, .stage:not([data-enhanced]) .hero-hint { display: none; }
 .stage:not([data-enhanced]) .shot:not(#origin) .shot-image img { max-height: 75svh; }
 
@@ -168,30 +155,6 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
   .site-footer { grid-template-columns: 1.4fr 1fr 1.2fr; }
   .footer-legal { grid-column: 1 / -1; }
 }
-
-/* ---------- The collection slide (mobile first) ---------- */
-
-.shot#products { background: radial-gradient(120% 80% at 70% 35%, #f6efe3, #e6d9c6 70%); }
-.product-shelf {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: clamp(.6rem, 3vw, 3rem);
-  margin: 0; padding: calc(var(--header) + 1.5rem) var(--gutter) 0; list-style: none;
-}
-.stage[data-enhanced] .product-shelf { position: absolute; inset: 0 0 auto; height: 58%; padding-top: calc(var(--header) + 1rem); }
-.product a { display: grid; justify-items: center; gap: .8rem; text-align: center; }
-.product-bag {
-  display: block; width: auto; height: auto; max-width: 100%; max-height: min(42svh, 26rem);
-  filter: drop-shadow(0 1.6rem 1.4rem rgb(44 30 21 / 28%)); transition: transform 600ms cubic-bezier(.2, .7, .2, 1);
-}
-.product a:is(:hover, :focus-visible) .product-bag { transform: translateY(-.6rem) rotate(-1.5deg); }
-.product-meta { display: grid; gap: .15rem; color: var(--soft); font-size: .68rem; line-height: 1.4; }
-.product-meta strong { color: var(--text); font: 600 clamp(1rem, 3.4vw, 1.6rem)/1.1 var(--sans); letter-spacing: -.02em; }
-.product-price { color: var(--accent); font-weight: 800; letter-spacing: .08em; }
-@media (min-width: 768px) {
-  .stage[data-enhanced] .product-shelf { inset: 0 0 0 42%; height: auto; align-content: center; padding: var(--header) var(--gutter) 2rem 0; }
-  .product-bag { max-height: min(56svh, 34rem); }
-  .product-meta { font-size: .74rem; }
-}
-.stage:not([data-enhanced]) .product-shelf { padding-block: 4rem 0; }
 
 /* ---------- Story and Coffee ---------- */
 
@@ -252,10 +215,6 @@ h1 em, h2 em { color: var(--accent); font-style: normal; font-weight: 500; }
   .film .shot-shade {
     background: linear-gradient(180deg, rgb(15 11 7 / 62%), transparent 20%),
       linear-gradient(0deg, rgb(15 11 7 / 96%), rgb(15 11 7 / 59%) 31%, transparent 63%);
-  }
-  .ritual .shot-shade {
-    background: linear-gradient(180deg, rgb(239 229 213 / 73%), transparent 19%),
-      linear-gradient(0deg, #efe5d5 5%, rgb(239 229 213 / 94%) 25%, transparent 56%);
   }
   .hero, .stage[data-enhanced] .caption { inset: auto var(--gutter) 2.2rem; width: auto; }
   .hero h1 { font-size: clamp(2.3rem, 10.5vw, 3.6rem); }

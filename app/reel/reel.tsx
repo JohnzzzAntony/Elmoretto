@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { LinearFilter, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Texture, Vector2, WebGLRenderer } from "three";
-import { SCRUB } from "../motion";
+import { SCRUB, scrollToPosition } from "../motion";
 import { Navigation } from "../navigation";
 
 // public/reel/ holds the brand film as stills, written by scripts/extract-reel-frames.mjs. Keep these two in step with it.
@@ -91,7 +91,8 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-export function Reel() {
+// `embedded` is the reel on the home page, where it follows the harvest film and needs no title of its own.
+export function Reel({ embedded = false }: { embedded?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
 
@@ -148,12 +149,19 @@ export function Reel() {
       const frames: (HTMLImageElement | undefined)[] = new Array(COUNT);
       const order = [16, 8, 4, 2, 1].flatMap((step, pass) =>
         Array.from({ length: Math.ceil(COUNT / step) }, (_, i) => i * step).filter((index) => pass === 0 || index % (step * 2)));
-      const images = order.map((index) => {
-        const image = new Image();
-        image.src = frameUrl(size, index);
-        image.decode().then(() => { frames[index] = image; }, () => {});
-        return image;
-      });
+      // Loading starts two screens before the reel arrives, so the home page's own film gets the network first.
+      let images: HTMLImageElement[] = [];
+      const loader = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        loader.disconnect();
+        images = order.map((index) => {
+          const image = new Image();
+          image.src = frameUrl(size, index);
+          image.decode().then(() => { frames[index] = image; }, () => {});
+          return image;
+        });
+      }, { rootMargin: "200% 0px" });
+      loader.observe(root.current!);
       function nearest(index: number) {
         for (let distance = 0; distance < COUNT; distance++) {
           if (frames[index - distance]) return index - distance;
@@ -181,12 +189,12 @@ export function Reel() {
           scrub: SCRUB, anticipatePin: 1, invalidateOnRefresh: true, onRefresh: resize,
         },
       });
-      timeline
-        .to(playhead, { frame: COUNT - 1, duration: DURATION }, 0)
-        .to(select(".hero"), { autoAlpha: 0, y: -24, duration: 0.9, ease: "sine.inOut" }, 0.5);
+      const hero = select(".hero");
+      timeline.to(playhead, { frame: COUNT - 1, duration: DURATION }, 0);
+      if (hero.length) timeline.to(hero, { autoAlpha: 0, y: -24, duration: 0.9, ease: "sine.inOut" }, 0.5);
       captions.forEach((caption, i) => {
         const next = chapters[i + 1];
-        const enter = i === 0 ? 1.6 : chapters[i].at + 0.25;
+        const enter = i === 0 && hero.length ? 1.6 : chapters[i].at + 0.25;
         timeline
           .fromTo(caption, { autoAlpha: 0, y: 0 }, { autoAlpha: 1, duration: 0.45, ease: "sine.inOut" }, enter)
           .fromTo(caption.children, { y: 34 }, { y: 0, duration: 0.6, stagger: 0.07, ease: "power3.out" }, enter);
@@ -217,7 +225,19 @@ export function Reel() {
       }
       viewport.addEventListener("pointermove", onPointerMove);
 
+      // Links such as /#espresso land on that chapter of the film.
+      function onHash() {
+        const chapter = chapters.find(({ id }) => `#${id}` === location.hash);
+        const trigger = timeline.scrollTrigger;
+        if (chapter && trigger) scrollToPosition(trigger.start + (trigger.end - trigger.start) * (chapter.at + 1) / DURATION, true);
+      }
+      window.addEventListener("hashchange", onHash);
+      const initial = requestAnimationFrame(onHash);
+
       return () => {
+        cancelAnimationFrame(initial);
+        window.removeEventListener("hashchange", onHash);
+        loader.disconnect();
         gsap.ticker.remove(render);
         viewport.removeEventListener("pointermove", onPointerMove);
         images.forEach((image) => { image.src = ""; });
@@ -233,17 +253,17 @@ export function Reel() {
 
   return (
     <div className="experience" ref={root}>
-      <div className="stage reel" ref={stage} data-theme="dark">
+      <div className="stage reel" ref={stage}>
         <Navigation />
         <canvas className="reel-canvas" aria-hidden="true" />
         <section className="film" aria-label="The El Moretto film">
           <div className="shot-shade" />
-          <div className="hero">
+          {!embedded && <div className="hero">
             <p className="kicker"><span className="kicker-rule" />A film by El Moretto</p>
             <h1>Coffee,<br /><em>frame by frame.</em></h1>
             <p className="hero-deck">Scroll to play the El Moretto film at your own pace, from the bag to the cup and back to the farm.</p>
             <p className="hero-hint"><span className="hero-hint-line" />Scroll to begin</p>
-          </div>
+          </div>}
           {chapters.map((chapter, i) => (
             <article key={chapter.id} id={chapter.id}>
               {/* eslint-disable-next-line @next/next/no-img-element -- static export */}

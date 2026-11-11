@@ -1,5 +1,6 @@
 import { CinematicExperience } from "./cinematic";
 import { Footer } from "./navigation";
+import { Reel } from "./reel/reel";
 import { Visual } from "./visual";
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
       <a className="skip-link" href="/story/">Skip to the readable story</a>
       <main id="main">
         <CinematicExperience />
+        <Reel embedded />
         <section className="outro" aria-labelledby="outro-title">
           <p className="kicker"><span className="kicker-rule" />Beyond the cup</p>
           <h2 id="outro-title">A slower kind of <em>morning.</em></h2>
